@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
-# qwiic_template_ex1_title.py TODO: replace template and title
+# qwiic_rv8803_ex1_set_time.py
 #
-# TODO: Add description for this example
+# This example shows how to set the time on the RTC to a custom time.
 #-------------------------------------------------------------------------------
-# Written by SparkFun Electronics, TODO: month and year
+# Written by SparkFun Electronics, November 2024
 #
 # This python library supports the SparkFun Electroncis Qwiic ecosystem
 #
@@ -33,26 +33,43 @@
 # SOFTWARE.
 #===============================================================================
 
-import qwiic_template # TODO Import correct package
+import qwiic_rv8803
 import sys
+import time
 
 def runExample():
-	# TODO Replace template and title
-	print("\nQwiic Template Example 1 - Title\n")
+	print("\nQwiic RV8803 Example 1 - Set Time\n")
 
 	# Create instance of device
-	myDevice = qwiic_template.QwiicTemplate() # TODO update as needed
+	myRTC = qwiic_rv8803.QwiicRV8803()
 
 	# Check if it's connected
-	if myDevice.is_connected() == False:
+	if myRTC.is_connected() == False:
 		print("The device isn't connected to the system. Please check your connection", \
 			file=sys.stderr)
 		return
 
 	# Initialize the device
-	myDevice.begin()
+	myRTC.begin()
 
-	# TODO Add basic example code
+	# Below variables are used to set the time
+	sec = 2
+	minute = 47
+	hour = 14
+	date = 2
+	month = 3
+	weekday = myRTC.kTuesday
+	year = 2020
+
+	myRTC.set_time(sec, minute, hour, weekday, date, month, year)
+	# myRTC.set_24_hour() # uncomment line if you'd like to to set the RTC to 24 hour mode
+
+	while True:
+		myRTC.update_time()
+		print ("Current Time: ", end="")
+		print (myRTC.string_date_usa())
+		print (" ", myRTC.string_time())
+		time.sleep(1)
 
 if __name__ == '__main__':
 	try:
