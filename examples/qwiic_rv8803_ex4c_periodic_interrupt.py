@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
-# qwiic_rv8803_ex1_set_time.py
+# qwiic_rv8803_ex4c_periodic_interrupt.py
 #
-# This example shows how to set the time on the RTC to a custom time.
+# This example shows how to generate a periodic 1s interrupt pulse
 #-------------------------------------------------------------------------------
 # Written by SparkFun Electronics, November 2024
 #
@@ -37,8 +37,29 @@ import qwiic_rv8803
 import sys
 import time
 
+# These helper functions are just to provide us with a platform-independent way to get the current time in microseconds (from our microcontroller, not the RTC)
+# The CircuitPython time module has time.monotonic_ns()
+# The MicroPython time module has time.time_ns()
+# RasPi time module has both
+# TODO: check that this is necessary and if this is a clean-ish way to do this
+def check_has_monotonic_ns():
+	try:
+		time.monotonic_ns()
+		return True 
+	except AttributeError:
+		return False
+	
+def get_microseconds(use_monotonic_ns):
+	if use_monotonic_ns:
+		return time.monotonic_ns() // 1000 # works in CircuitPython and RasPi
+	else:
+		return time.time_ns() // 1000 # only works in MicroPython
+
 def runExample():
-	print("\nQwiic RV8803 Example 1 - Set Time\n")
+	print("\nQwiic RV8803 Example 4c - Periodic Interrupt\n")
+
+	# First we'll check if the time module for current platform has the monotonic_ns() function
+	useMono = check_has_monotonic_ns()
 
 	# Create instance of device
 	myRTC = qwiic_rv8803.QwiicRV8803()
@@ -52,24 +73,18 @@ def runExample():
 	# Initialize the device
 	myRTC.begin()
 
-	# Below variables are used to set the time
-	sec = 2
-	minute = 47
-	hour = 14
-	date = 2
-	month = 3
-	weekday = myRTC.kTuesday
-	year = 2020
-
-	myRTC.set_time(sec, minute, hour, weekday, date, month, year)
-	# myRTC.set_24_hour() # uncomment line if you'd like to to set the RTC to 24 hour mode
+	myRTC.disable_all_interrupts()
+	myRTC.clear_all_interrupt_flags() # Clear all flags in case any interrupts have occurred.
+	myRTC.set_periodic_time_update_frequency(myRTC.kTimeUpdate1Second) # Another option is kTimeUpdate1Minute
+	myRTC.enable_hardware_interrupt(myRTC.kUpdateInterrupt)
+	lastInterruptTime = get_microseconds(useMono)
 
 	while True:
-		myRTC.update_time()
-		print ("Current Time: ", end="")
-		print (myRTC.string_date_usa(), end="")
-		print (" ", myRTC.string_time())
-		time.sleep(1)
+		if myRTC.get_interrupt_flag(myRTC.kFlagUpdate):
+			timeSinceLastInterrupt = get_microseconds(useMono) - lastInterruptTime
+			lastInterruptTime = get_microseconds(useMono)
+			myRTC.clear_interrupt_flag(myRTC.kFlagUpdate)
+			print("Periodic 1s interrupt triggered. Time since last interrupt: ", timeSinceLastInterrupt, " uS")
 
 if __name__ == '__main__':
 	try:

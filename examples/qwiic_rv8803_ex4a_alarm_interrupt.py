@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
-# qwiic_rv8803_ex1_set_time.py
+# qwiic_rv8803_ex4a_alarm_interrupt.py
 #
-# This example shows how to set the time on the RTC to a custom time.
+# This example shows how to set an alarm and make the RTC generate an interrupt when the clock time matches the alarm time.
+# The INT pin will be high (~3.3V) until real time matches alarm time when it will go low (~0V).
 #-------------------------------------------------------------------------------
 # Written by SparkFun Electronics, November 2024
 #
@@ -37,8 +38,21 @@ import qwiic_rv8803
 import sys
 import time
 
+# Make sure to change these values to the decimal values that you want to match
+minuteAlarmValue = 55  # 0-60, change this to a minute or two from now to see the alarm get generated
+hourAlarmValue = 0  # 0-24
+weekdayAlarmValue = qwiic_rv8803.QwiicRV8803.kSunday | qwiic_rv8803.QwiicRV8803.kSaturday  # Or together days of the week to enable the alarm on those days.
+dateAlarmValue = 0  # 1-31
+
+# Define which alarm registers we want to match, make sure you only enable weekday or date alarm, enabling both will default to a date alarm
+# In its current state, an alarm will be generated once an hour, when the MINUTES registers on the time and alarm match. Setting minuteAlarmEnable to false would trigger an alarm every minute
+minuteAlarmEnable = True
+hourAlarmEnable = False
+weekdayAlarmEnable = False
+dateAlarmEnable = False
+
 def runExample():
-	print("\nQwiic RV8803 Example 1 - Set Time\n")
+	print("\nQwiic RV8803 Example 4a - Alarm Interrupt\n")
 
 	# Create instance of device
 	myRTC = qwiic_rv8803.QwiicRV8803()
@@ -52,23 +66,26 @@ def runExample():
 	# Initialize the device
 	myRTC.begin()
 
-	# Below variables are used to set the time
-	sec = 2
-	minute = 47
-	hour = 14
-	date = 2
-	month = 3
-	weekday = myRTC.kTuesday
-	year = 2020
-
-	myRTC.set_time(sec, minute, hour, weekday, date, month, year)
-	# myRTC.set_24_hour() # uncomment line if you'd like to to set the RTC to 24 hour mode
+	myRTC.disable_all_interrupts()
+	myRTC.clear_all_interrupt_flags()
+	#The alarm interrupt compares the alarm interrupt registers with the current time registers. We must choose which registers we want to compare by setting bits to true or false
+	myRTC.set_items_to_match_for_alarm(minuteAlarmEnable, hourAlarmEnable, weekdayAlarmEnable, dateAlarmEnable)
+	myRTC.set_alarm_minutes(minuteAlarmValue)
+	myRTC.set_alarm_hours(hourAlarmValue)
+	myRTC.set_alarm_weekday(weekdayAlarmValue)
+	# myRTC.set_alarm_date(dateAlarmValue) # uncomment this line if you want to set a date alarm instead of weekday
+	myRTC.enable_hardware_interrupt(myRTC.kAlarmInterrupt)
 
 	while True:
-		myRTC.update_time()
-		print ("Current Time: ", end="")
-		print (myRTC.string_date_usa(), end="")
-		print (" ", myRTC.string_time())
+		if myRTC.get_interrupt_flag(myRTC.kFlagAlarm):
+			print("Alarm Triggered! Clearing flag...")
+			myRTC.clear_interrupt_flag(myRTC.kFlagAlarm)
+		else:
+			myRTC.update_time()
+			print("Waiting for alarm to trigger. Current Time: ", end="")
+			print (myRTC.string_date_usa(), end="")
+			print (" ", myRTC.string_time())
+
 		time.sleep(1)
 
 if __name__ == '__main__':

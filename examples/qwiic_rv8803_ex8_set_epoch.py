@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
-# qwiic_rv8803_ex1_set_time.py
+# qwiic_rv8803_ex8_set_epoch.py
 #
-# This example shows how to set the time on the RTC to a custom time.
+# This example shows how to set the epoch time for the RTC.
 #-------------------------------------------------------------------------------
 # Written by SparkFun Electronics, November 2024
 #
@@ -38,7 +38,7 @@ import sys
 import time
 
 def runExample():
-	print("\nQwiic RV8803 Example 1 - Set Time\n")
+	print("\nQwiic RV8803 Example 8 - Set Epoch\n")
 
 	# Create instance of device
 	myRTC = qwiic_rv8803.QwiicRV8803()
@@ -52,23 +52,18 @@ def runExample():
 	# Initialize the device
 	myRTC.begin()
 
-	# Below variables are used to set the time
-	sec = 2
-	minute = 47
-	hour = 14
-	date = 2
-	month = 3
-	weekday = myRTC.kTuesday
-	year = 2020
-
-	myRTC.set_time(sec, minute, hour, weekday, date, month, year)
-	# myRTC.set_24_hour() # uncomment line if you'd like to to set the RTC to 24 hour mode
+	myRTC.set_time_zone_quarter_hours(0) # Make sure t1he time zone is zero, otherwise getEpoch will be offset
+	myRTC.set_epoch(1732736438) # set with Unix Epoch for GMT: Wednesday, November 27, 2024 7:40:38 PM
 
 	while True:
 		myRTC.update_time()
-		print ("Current Time: ", end="")
-		print (myRTC.string_date_usa(), end="")
-		print (" ", myRTC.string_time())
+		
+		# Get epoch time
+		print("Epoch Time: ", myRTC.get_epoch())
+
+		# get time in ISO 8601 format
+		print("Current ISO-8601 Time: ", myRTC.string_time_8601())
+
 		time.sleep(1)
 
 if __name__ == '__main__':

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
-# qwiic_rv8803_ex1_set_time.py
+# qwiic_rv8803_ex6_fine_tuning.py
 #
-# This example shows how to set the time on the RTC to a custom time.
+# This example shows how to calibrate the RTC's oscillator to have it keep even more accurate time
 #-------------------------------------------------------------------------------
 # Written by SparkFun Electronics, November 2024
 #
@@ -38,7 +38,7 @@ import sys
 import time
 
 def runExample():
-	print("\nQwiic RV8803 Example 1 - Set Time\n")
+	print("\nQwiic RV8803 Example 6 - Fine Tuning\n")
 
 	# Create instance of device
 	myRTC = qwiic_rv8803.QwiicRV8803()
@@ -52,24 +52,20 @@ def runExample():
 	# Initialize the device
 	myRTC.begin()
 
-	# Below variables are used to set the time
-	sec = 2
-	minute = 47
-	hour = 14
-	date = 2
-	month = 3
-	weekday = myRTC.kTuesday
-	year = 2020
-
-	myRTC.set_time(sec, minute, hour, weekday, date, month, year)
-	# myRTC.set_24_hour() # uncomment line if you'd like to to set the RTC to 24 hour mode
-
+	# We now must measure the frequency on the Clock Out carefully to calibrate our crystal. To start generating a signal on Clock Out, tie CLKOE High.
+ 	# Change measuredFrequency accordingly, note that you can only correct +/-7.6288 ppm
+	myRTC.set_calibration_offset(0) # zero out any previous calibration
+	myRTC.set_clock_out_timer_frequency(myRTC.kClockOutFrequency1Hz) # set the clock out to 1Hz square wave
+	measuredFrequency = 1.0000012 # measured frequency in HZ (CHANGE THIS TO YOUR MEASURED VALUE)
+	newPPM = (measuredFrequency - 1) * 1000000 # Calculate PPM difference between measuredFrequency and our desired 1 Hz wave
+	# myRTC.set_calibration_offset(newPPM) # Uncomment this line after you have changed the value of measuredFrequency to load the new calibration into the RTC
+	print("Tie CLKOE high to measure the frequency on the Clock Out pin.")
+	print("Measure the frequency and input it into measuredFrequency in this calibration script.")
+	print("Then uncomment the line to set the calibration offset to the new value.")
+	
+	# Wait forever (until user interrupts the program) so we can manually measure the square wave
 	while True:
-		myRTC.update_time()
-		print ("Current Time: ", end="")
-		print (myRTC.string_date_usa(), end="")
-		print (" ", myRTC.string_time())
-		time.sleep(1)
+		pass
 
 if __name__ == '__main__':
 	try:

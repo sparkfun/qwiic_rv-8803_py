@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-------------------------------------------------------------------------------
-# qwiic_rv8803_ex1_set_time.py
+# qwiic_rv8803_ex2_print_time.py
 #
-# This example shows how to set the time on the RTC to a custom time.
+# This example shows how to print the time on the RTC.
 #-------------------------------------------------------------------------------
 # Written by SparkFun Electronics, November 2024
 #
@@ -38,7 +38,7 @@ import sys
 import time
 
 def runExample():
-	print("\nQwiic RV8803 Example 1 - Set Time\n")
+	print("\nQwiic RV8803 Example 2 - Print Time\n")
 
 	# Create instance of device
 	myRTC = qwiic_rv8803.QwiicRV8803()
@@ -51,18 +51,6 @@ def runExample():
 
 	# Initialize the device
 	myRTC.begin()
-
-	# Below variables are used to set the time
-	sec = 2
-	minute = 47
-	hour = 14
-	date = 2
-	month = 3
-	weekday = myRTC.kTuesday
-	year = 2020
-
-	myRTC.set_time(sec, minute, hour, weekday, date, month, year)
-	# myRTC.set_24_hour() # uncomment line if you'd like to to set the RTC to 24 hour mode
 
 	while True:
 		myRTC.update_time()

@@ -176,12 +176,6 @@ class QwiicRV8803(object):
     kTmWDay = 6
     kTmYDay = 7
     kTmIsDST = 8 # Note, IsDST is implemented in CircuitPython but not in MicroPython
-    
-    # Interrupt Sources
-    kInterruptBlie = 4
-    kInterruptTie = 3
-    kInterruptAie = 2
-    kInterruptEie = 1
 
     def __init__(self, address=None, i2c_driver=None):
         """
@@ -311,14 +305,14 @@ class QwiicRV8803(object):
 
         if self.is_12_hour():
             hours = self.bcd_to_dec(self._time[self.kIdxHours])
-            return "{:02}:{:02}:{:02} {}.{:02}".format(hours if hours <= 12 else hours - 12, 
+            return "{:02}:{:02}:{:02}:{:02}{}".format(hours if hours <= 12 else hours - 12, 
                                                        self.bcd_to_dec(self._time[self.kIdxMinutes]), 
                                                        self.bcd_to_dec(seconds), 
                                                        self.bcd_to_dec(hundredths),
                                                        "PM" if self.is_PM() else "AM",
                                                        )
         else:
-            return "{:02}:{:02}:{:02}.{:02}".format(self.bcd_to_dec(self._time[self.kIdxHours]), 
+            return "{:02}:{:02}:{:02}:{:02}".format(self.bcd_to_dec(self._time[self.kIdxHours]), 
                                                     self.bcd_to_dec(self._time[self.kIdxMinutes]), 
                                                     self.bcd_to_dec(seconds), 
                                                     self.bcd_to_dec(hundredths))
@@ -539,7 +533,7 @@ class QwiicRV8803(object):
 
         return True
 
-    def set_epoch(self, value, use1970sEpoch=False, timeZoneQuarterHours=0):
+    def set_epoch(self, value, use1970sEpoch=True, timeZoneQuarterHours=0):
         """
         Sets time using UNIX Epoch time.
         If timeZoneQuarterHours is non-zero, update RV8803_RAM. Add the zone to the epoch before setting
@@ -563,7 +557,7 @@ class QwiicRV8803(object):
         self.set_local_epoch(value, use1970sEpoch)
 
 
-    def set_local_epoch(self, value, use1970sEpoch=False):
+    def set_local_epoch(self, value, use1970sEpoch = True):
         """
         Set the local epoch - without adding the time zone
 
@@ -572,8 +566,8 @@ class QwiicRV8803(object):
         :param use1970sEpoch: If `True`, the epoch is in the 1970s
         :type use1970sEpoch: bool
         """
-        if use1970sEpoch:
-            value -= 946684800
+        if not use1970sEpoch:
+            value += 946684800
         
         # TODO: MicroPython has time.gmtime() while CircuitPython does not. Both have time.localtime(). Since neither really has timezone support, 
         #       the output or time.gmtime() is equivalent to time.localtime() for both. However, RaspberryPi likely has explicit timezone support, so we might have to 
@@ -585,8 +579,8 @@ class QwiicRV8803(object):
         self._time[self.kIdxHours] = self.dec_to_bcd(tmp[self.kTmHour])
         self._time[self.kIdxDate] = self.dec_to_bcd(tmp[self.kTmMDay])
         self._time[self.kIdxWeekday] = self.dec_to_bcd(1 << tmp[self.kTmWDay])
-        self._time[self.kIdxMonth] = self.dec_to_bcd(tmp[self.kTmMonth] + 1)
-        self._time[self.kIdxYear] = self.dec_to_bcd(tmp[self.kTmYear] - 100)
+        self._time[self.kIdxMonth] = self.dec_to_bcd(tmp[self.kTmMonth])
+        self._time[self.kIdxYear] = self.dec_to_bcd(tmp[self.kTmYear] - 2000)
 
         self.set_time_list(self._time)
     
@@ -762,10 +756,10 @@ class QwiicRV8803(object):
         We do not protect the GPx registers. They will be overwritten. The user has plenty of RAM if they need it.
         """
 
-        self._time = self._i2c.readBlock(self.address, self.kRegHundredths, self.kTimeListLength)
+        self._time = list(self._i2c.readBlock(self.address, self.kRegHundredths, self.kTimeListLength))
         # If hundredths are at 99 or seconds are at 59, read again to make sure we didn't accidentally skip a second/minute
         if self._time[self.kIdxHundredths] == 0x99 or self._time[self.kIdxSeconds] == 0x59:
-            rollover_time = self._i2c.readBlock(self.address, self.kRegHundredths, self.kTimeListLength)
+            rollover_time = list(self._i2c.readBlock(self.address, self.kRegHundredths, self.kTimeListLength))
             # If the reading for hundredths has rolled over, then our new data is correct, otherwise, we can leave the old data.
             if self.bcd_to_dec(self._time[self.kIdxHundredths]) > self.bcd_to_dec(rollover_time[self.kIdxHundredths]):
                 self._time = rollover_time
@@ -853,7 +847,7 @@ class QwiicRV8803(object):
         """
         return self.bcd_to_dec(self._time[self.kIdxYear]) + 2000
 
-    def get_epoch(self, use1970sEpoch=False):
+    def get_epoch(self, use1970sEpoch=True):
         """
         Get the epoch - with the time zone subtracted (i.e. return UTC epoch)
 
@@ -863,9 +857,11 @@ class QwiicRV8803(object):
         :return: The epoch time
         :rtype: int
         """
-        pass
+        local_epoch = self.get_local_epoch(use1970sEpoch)
+        return local_epoch - (self.get_time_zone_quarter_hours() * 15 * 60)
+        
 
-    def get_local_epoch(self, use1970sEpoch=False):
+    def get_local_epoch(self, use1970sEpoch=True):
         """
         Get the local epoch - without subtracting the time zone
 
@@ -881,8 +877,8 @@ class QwiicRV8803(object):
         tm[self.kTmMinute] = self.bcd_to_dec(self._time[self.kIdxMinutes])
         tm[self.kTmHour] = self.bcd_to_dec(self._time[self.kIdxHours])
         tm[self.kTmMDay] = self.bcd_to_dec(self._time[self.kIdxDate])
-        tm[self.kTmMonth] = self.bcd_to_dec(self._time[self.kIdxMonth]) - 1
-        tm[self.kTmYear] = self.bcd_to_dec(self._time[self.kIdxYear]) + 100
+        tm[self.kTmMonth] = self.bcd_to_dec(self._time[self.kIdxMonth])
+        tm[self.kTmYear] = self.bcd_to_dec(self._time[self.kIdxYear]) + 2000
         tm[self.kTmWDay] = 0
         tm[self.kTmYDay] = 0
 
@@ -891,8 +887,8 @@ class QwiicRV8803(object):
 
         t = time.mktime(tm)
 
-        if use1970sEpoch:
-            t += 946684800
+        if not use1970sEpoch:
+            t -= 946684800
         
         return t
 
@@ -1192,15 +1188,16 @@ class QwiicRV8803(object):
 
         Given a bit location, enable the interrupt
         Allowable sources: 
-            kInterruptBlie
-            kInterruptTie
-            kInterruptAie
-            kInterruptEie 
+            kUpdateInterrupt
+            kTimerInterrupt
+            kAlarmInterrupt
+            kEviInterrupt
+            kControlReset
 
         :param source: The interrupt source
         :type source: int
         """
-        if source not in [self.kInterruptBlie, self.kInterruptTie, self.kInterruptAie, self.kInterruptEie]:
+        if source not in [self.kUpdateInterrupt, self.kTimerInterrupt, self.kAlarmInterrupt, self.kEviInterrupt, self.kControlReset]:
             return
 
         value = self._i2c.readByte(self.address, self.kRegControl)
@@ -1211,15 +1208,16 @@ class QwiicRV8803(object):
         """
         Disables the hardware interrupt for the given source
         Allowable sources: 
-            kInterruptBlie
-            kInterruptTie
-            kInterruptAie
-            kInterruptEie 
+            kUpdateInterrupt
+            kTimerInterrupt
+            kAlarmInterrupt
+            kEviInterrupt
+            kControlReset
 
         :param source: The interrupt source
         :type source: int
         """
-        if source not in [self.kInterruptBlie, self.kInterruptTie, self.kInterruptAie, self.kInterruptEie]:
+        if source not in [self.kUpdateInterrupt, self.kTimerInterrupt, self.kAlarmInterrupt, self.kEviInterrupt, self.kControlReset]:
             return
         value = self._i2c.readByte(self.address, self.kRegControl)
         value &= ~(1 << source)  # Clear the interrupt enable bit
