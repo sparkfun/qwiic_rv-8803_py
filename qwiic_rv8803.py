@@ -33,7 +33,7 @@
 # SOFTWARE.
 #===============================================================================
 
-"""
+"""!
 qwiic_rv8803.py
 ============
 Python module for the [SparkFun Qwiic RV-8803](https://www.sparkfun.com/products/16281)
@@ -178,15 +178,13 @@ class QwiicRV8803(object):
     kTmIsDST = 8 # Note, IsDST is implemented in CircuitPython but not in MicroPython
 
     def __init__(self, address=None, i2c_driver=None):
-        """
+        """!
         Constructor
 
-        :param address: The I2C address to use for the device
+        @param int, optional address: The I2C address to use for the device
             If not provided, the default address is used
-        :type address: int, optional
-        :param i2c_driver: An existing i2c driver object
+        @param I2CDriver, optional i2c_driver: An existing i2c driver object
             If not provided, a driver object is created
-        :type i2c_driver: I2CDriver, optional
         """
 
         # Use address if provided, otherwise pick the default
@@ -214,11 +212,10 @@ class QwiicRV8803(object):
             self._hasIsDst = True
         
     def is_connected(self):
-        """
+        """!
         Determines if this device is connected
 
-        :return: `True` if connected, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if connected, otherwise `False`
         """
         # Check if connected by seeing if an ACK is received
         return self._i2c.isDeviceConnected(self.address)
@@ -226,42 +223,39 @@ class QwiicRV8803(object):
     connected = property(is_connected)
 
     def begin(self):
-        """
+        """!
         Initializes this device with default parameters
 
-        :return: Returns `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** Returns `True` if successful, otherwise `False`
         """
         # Confirm device is connected before doing anything
         return self.is_connected()
     
     def set_12_hour(self):
-        """
+        """!
         Sets the device to 12 hour mode
         """
         self._is12Hour = True
 
     def set_24_hour(self):
-        """
+        """!
         Sets the device to 24 hour mode
         """
         self._is12Hour = False
     
     def is_12_hour(self):
-        """
+        """!
         Determines if the device is in 12 hour mode
 
-        :return: `True` if in 12 hour mode, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if in 12 hour mode, otherwise `False`
         """
         return self._is12Hour 
 
     def is_PM(self):
-        """
+        """!
         Determines if the device is in PM
 
-        :return:  Returns true if the microcontroller is in 12 hour mode and the RTC has an hours value greater than or equal to 12 (Noon).
-        :rtype: bool
+        @return **bool** Returns true if the microcontroller is in 12 hour mode and the RTC has an hours value greater than or equal to 12 (Noon).
         """
         if self.is_12_hour():
             return self.bcd_to_dec(self._time[self.kIdxHours]) >= 12
@@ -269,19 +263,19 @@ class QwiicRV8803(object):
         return False
     
     def string_date_usa(self):
-        """
+        """!
         Returns the date in MM/DD/YYYY format
         """
         return "{:02}/{:02}/20{:02}".format(self.bcd_to_dec(self._time[self.kIdxMonth]), self.bcd_to_dec(self._time[self.kIdxDate]), self.bcd_to_dec(self._time[self.kIdxYear]))
     
     def string_date(self):
-        """
+        """!
         Returns the date in the DD/MM/YYYY format
         """
         return "{:02}/{:02}/20{:02}".format(self.bcd_to_dec(self._time[self.kIdxDate]), self.bcd_to_dec(self._time[self.kIdxMonth]), self.bcd_to_dec(self._time[self.kIdxYear]))
 
     def string_time(self):
-        """
+        """!
         Returns the time in hh:mm:ss (Adds AM/PM if in 12 hour mode)
         """
         if self.is_12_hour():
@@ -296,7 +290,7 @@ class QwiicRV8803(object):
                                           self.bcd_to_dec(self._time[self.kIdxSeconds]))
 
     def string_timestamp(self):
-        """
+        """!
         Returns the most recent timestamp captured on the EVI pin (if the EVI pin has been configured to capture events)
         """
 
@@ -318,7 +312,7 @@ class QwiicRV8803(object):
                                                     self.bcd_to_dec(hundredths))
                     
     def string_time_8601(self):
-        """
+        """!
         Returns timestamp in ISO 8601 format (yyyy-mm-ddThh:mm:ss)
         """
         return "20{:02}-{:02}-{:02}T{:02}:{:02}:{:02}".format(self.bcd_to_dec(self._time[self.kIdxYear]), 
@@ -328,7 +322,7 @@ class QwiicRV8803(object):
                                                               self.bcd_to_dec(self._time[self.kIdxMinutes]), 
                                                               self.bcd_to_dec(self._time[self.kIdxSeconds]))
 
-    """
+    """!
     Below is an optimized python port of the following Arduino c++ function:
 
     char* RV8803::stringTime8601TZ(char* buffer, size_t len)
@@ -350,7 +344,7 @@ class QwiicRV8803(object):
     }
     """
     def string_time_8601_TZ(self):
-        """
+        """!
         Returns timestamp in ISO 8601 format (yyyy-mm-ddThh:mm:ss) and uses timezone corrections
         """
         quarter_hours = self.get_time_zone_quarter_hours()
@@ -374,11 +368,10 @@ class QwiicRV8803(object):
                                                                             tzm)
 
     def string_day_of_week(self):
-        """
+        """!
         Returns the day of the week as a string
 
-        :return: The day of the week as a string
-        :rtype: str
+        @return **str** The day of the week as a string
         """
         day = self._time[self.kIdxWeekday]
         if day == self.kSunday:
@@ -399,17 +392,16 @@ class QwiicRV8803(object):
             return "Invalid Day"
     
     def string_day_of_week_short(self):
-        """
+        """!
         Return the day of week. Returns "Sun", "Mon" etc
-        
-        :return: The day of the week as a string
-        :rtype: str
+
+        @return **str** The day of the week as a string
         """
         return self.string_day_of_week()[:3]
     
 
     def string_date_ordinal(self):
-        """
+        """!
         Return the ordinal for the date (day of month). Returns "1st", "2nd", "3rd", "4th" etc
         """
         day = self.bcd_to_dec(self._time[self.kIdxDate])
@@ -423,11 +415,10 @@ class QwiicRV8803(object):
             return "{}th".format(day)
 
     def string_month(self):
-        """
+        """!
         Return the name of the month. Returns "January", etc
 
-        :return: The month as a string
-        :rtype: str
+        @return **str** The month as a string
         """
         month = self._time[self.kIdxMonth]
         if month == 1:
@@ -458,23 +449,20 @@ class QwiicRV8803(object):
             return "Invalid Month"
     
     def string_month_short(self):
-        """
+        """!
         Return the name of the month (short). Returns "Jan", "Feb" etc
 
-        :return: The month as a string
-        :rtype: str
+        @return **str** The month as a string
         """
         return self.string_month()[:3]
     
     def set_time_list(self, time_list):
-        """
+        """!
         Sets the time using a list of bytes
 
-        :param time_list: A list of bytes representing the time
-        :type time_list: list
+        @param list time_list: A list of bytes representing the time
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         if len(time_list) != self.kTimeListLength:
             return False
@@ -490,26 +478,18 @@ class QwiicRV8803(object):
         return True
     
     def set_time(self, seconds, minutes, hours, weekday, date, month, year):
-        """
+        """!
         Sets the time using individual values
 
-        :param seconds: The seconds value
-        :type seconds: int
-        :param minutes: The minutes value
-        :type minutes: int
-        :param hours: The hours value
-        :type hours: int
-        :param weekday: The weekday value
-        :type weekday: int
-        :param date: The date value
-        :type date: int
-        :param month: The month value
-        :type month: int
-        :param year: The year value
-        :type year: int
+        @param int seconds: The seconds value
+        @param int minutes: The minutes value
+        @param int hours: The hours value
+        @param int weekday: The weekday value
+        @param int date: The date value
+        @param int month: The month value
+        @param int year: The year value
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
 
         # Verify input values
@@ -534,16 +514,13 @@ class QwiicRV8803(object):
         return True
 
     def set_epoch(self, value, use1970sEpoch=True, timeZoneQuarterHours=0):
-        """
+        """!
         Sets time using UNIX Epoch time.
         If timeZoneQuarterHours is non-zero, update RV8803_RAM. Add the zone to the epoch before setting
 
-        :param value: The epoch time
-        :type value: int
-        :param use1970sEpoch: If `True`, the epoch is in the 1970s
-        :type use1970sEpoch: bool
-        :param timeZoneQuarterHours: The time zone offset in 15 minute increments
-        :type timeZoneQuarterHours: int
+        @param int value: The epoch time
+        @param bool use1970sEpoch: If `True`, the epoch is in the 1970s
+        @param int timeZoneQuarterHours: The time zone offset in 15 minute increments
         """
 
         tz_offset = self.get_time_zone_quarter_hours() * 15 * 60
@@ -558,13 +535,11 @@ class QwiicRV8803(object):
 
 
     def set_local_epoch(self, value, use1970sEpoch = True):
-        """
+        """!
         Set the local epoch - without adding the time zone
 
-        :param value: The epoch time
-        :type value: int
-        :param use1970sEpoch: If `True`, the epoch is in the 1970s
-        :type use1970sEpoch: bool
+        @param int value: The epoch time
+        @param bool use1970sEpoch: If `True`, the epoch is in the 1970s
         """
         if not use1970sEpoch:
             value += 946684800
@@ -585,21 +560,19 @@ class QwiicRV8803(object):
         self.set_time_list(self._time)
     
     def set_hundredths_to_zero(self):
-        """
+        """!
         Sets the hundredths value to zero by setting then clearing RESET bit in CONTROL register (see App-Manual page 43)
         """
         self.write_bit(self.kRegControl, self.kControlReset, 1)
         self.write_bit(self.kRegControl, self.kControlReset, 0)
     
     def set_seconds(self, value):
-        """
+        """!
         Sets the seconds value
 
-        :param value: The seconds value
-        :type value: int
+        @param int value: The seconds value
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         if value < 0 or value > 59:
             return False
@@ -609,14 +582,12 @@ class QwiicRV8803(object):
         return True
     
     def set_minutes(self, value):
-        """
+        """!
         Sets the minutes value
 
-        :param value: The minutes value
-        :type value: int
+        @param int value: The minutes value
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         if value < 0 or value > 59:
             return False
@@ -626,14 +597,12 @@ class QwiicRV8803(object):
         return True
     
     def set_hours(self, value):
-        """
+        """!
         Sets the hours value
 
-        :param value: The hours value
-        :type value: int
+        @param int value: The hours value
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         if value < 0 or value > 23:
             return False
@@ -643,14 +612,12 @@ class QwiicRV8803(object):
         return True
     
     def set_date(self, value):
-        """
+        """!
         Sets the date value
 
-        :param value: The date value
-        :type value: int
+        @param int value: The date value
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         if value < 1 or value > 31:
             return False
@@ -660,10 +627,10 @@ class QwiicRV8803(object):
         return True
 
     def set_weekday(self, value):
-        """
+        """!
         Sets the weekday value
 
-        :param value: The weekday value
+        @param int value: The weekday value
             Allowable Values:
                 - kSunday
                 - kMonday
@@ -673,10 +640,7 @@ class QwiicRV8803(object):
                 - kFriday
                 - kSaturday
 
-        :type value: int
-    
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         if value not in [self.kSunday, self.kMonday, self.kTuesday, self.kWednesday, self.kThursday, self.kFriday, self.kSaturday]:
             return False
@@ -686,14 +650,12 @@ class QwiicRV8803(object):
         return True
     
     def set_month(self, value):
-        """
+        """!
         Sets the month value
 
-        :param value: The month value
-        :type value: int
+        @param int value: The month value
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         if value < 1 or value > 12:
             return False
@@ -703,28 +665,24 @@ class QwiicRV8803(object):
         return True
     
     def set_year(self, value):
-        """
+        """!
         Sets the year value
 
-        :param value: The year value (specify full year, including the "20" prefix i.e. 2024 rather than 24)
-        :type value: int
+        @param int value: The year value (specify full year, including the "20" prefix i.e. 2024 rather than 24)
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         self._time[self.kIdxYear] = self.dec_to_bcd(value - 2000)
         self.set_time_list(self._time)
         return True
 
     def set_time_zone_quarter_hours(self, quarter_hours):
-        """
+        """!
         Sets the time zone in quarter hours
 
-        :param quarter_hours: The time zone offset in 15 minute increments
-        :type quarter_hours: int
+        @param int quarter_hours: The time zone offset in 15 minute increments
 
-        :return: `True` if successful, otherwise `False`
-        :rtype: bool
+        @return **bool** `True` if successful, otherwise `False`
         """
         # verify signed 8 bit integer input
         if quarter_hours < -128 or quarter_hours > 127:
@@ -738,17 +696,16 @@ class QwiicRV8803(object):
         return True
 
     def get_time_zone_quarter_hours(self):
-        """
+        """!
         Gets the time zone in quarter hours
 
-        :return: The time zone offset in 15 minute increments
-        :rtype: int
+        @return **int** The time zone offset in 15 minute increments
         """
         unsigned = self._i2c.readByte(self.address, self.kRegRAM)
         return unsigned if unsigned < 128 else unsigned - 256
 
     def update_time(self):
-        """
+        """!
         Updates the time by reading the time from the RTC and storing it in the time list.
 
         Move the hours, mins, sec, etc registers from RV-8803 into the _time array
@@ -765,38 +722,34 @@ class QwiicRV8803(object):
                 self._time = rollover_time
     
     def get_hundredths(self):
-        """
+        """!
         Gets the byte value for hundredths
 
-        :return: The hundredths
-        :rtype: int
+        @return **int** The hundredths
         """
         return self.bcd_to_dec(self._time[self.kIdxHundredths])
 
     def get_seconds(self):
-        """
+        """!
         Gets the byte value for seconds
 
-        :return: The seconds
-        :rtype: int
+        @return **int** The seconds
         """
         return self.bcd_to_dec(self._time[self.kIdxSeconds])
 
     def get_minutes(self):
-        """
+        """!
         Gets the byte value for minutes
 
-        :return: The minutes
-        :rtype: int
+        @return **int** The minutes
         """
         return self.bcd_to_dec(self._time[self.kIdxMinutes])
 
     def get_hours(self):
-        """
+        """!
         Gets the byte value for hours, automatically converts to 12 hour mode if necessary
 
-        :return: The hours
-        :rtype: int
+        @return **int** The hours
         """
         hours = self.bcd_to_dec(self._time[self.kIdxHours])
         if self.is_12_hour() and (hours > 12):
@@ -805,20 +758,18 @@ class QwiicRV8803(object):
         return hours
 
     def get_date(self):
-        """
+        """!
         Gets the byte value for date
 
-        :return: The date
-        :rtype: int
+        @return **int** The date
         """
         return self.bcd_to_dec(self._time[self.kIdxDate])
 
     def get_weekday(self):
-        """
+        """!
         Gets the byte value for weekday. Compare against the day constants inherent to this class.
 
-        :return: The weekday
-        :rtype: int
+        @return **int** The weekday
         """
         return self.bcd_to_dec(self._time[self.kIdxWeekday])
         
@@ -830,46 +781,40 @@ class QwiicRV8803(object):
         #         return i
 
     def get_month(self):
-        """
+        """!
         Gets the byte value for month
 
-        :return: The month
-        :rtype: int
+        @return **int** The month
         """
         return self.bcd_to_dec(self._time[self.kIdxMonth])
 
     def get_year(self):
-        """
+        """!
         Gets the byte value for year. Automatically adds 2000 to the year.
 
-        :return: The year
-        :rtype: int
+        @return **int** The year
         """
         return self.bcd_to_dec(self._time[self.kIdxYear]) + 2000
 
     def get_epoch(self, use1970sEpoch=True):
-        """
+        """!
         Get the epoch - with the time zone subtracted (i.e. return UTC epoch)
 
-        :param use1970sEpoch: If `True`, the epoch is in the 1970s
-        :type use1970sEpoch: bool
+        @param bool use1970sEpoch: If `True`, the epoch is in the 1970s
 
-        :return: The epoch time
-        :rtype: int
+        @return **int** The epoch time
         """
         local_epoch = self.get_local_epoch(use1970sEpoch)
         return local_epoch - (self.get_time_zone_quarter_hours() * 15 * 60)
         
 
     def get_local_epoch(self, use1970sEpoch=True):
-        """
+        """!
         Get the local epoch - without subtracting the time zone
 
-        :param use1970sEpoch: If `True`, the epoch is in the 1970s
-        :type use1970sEpoch: bool
+        @param bool use1970sEpoch: If `True`, the epoch is in the 1970s
 
-        :return: The epoch time
-        :rtype: int
+        @return **int** The epoch time
         """
 
         tm = [0] * 8
@@ -894,31 +839,28 @@ class QwiicRV8803(object):
 
     
     def get_hundredths_capture(self):
-        """
+        """!
         Gets the byte value for hundredths capture
 
-        :return: The hundredths capture
-        :rtype: int
+        @return **int** The hundredths capture
         """
         return self.bcd_to_dec(self._i2c.readByte(self.address, self.kRegHundredthsCapture))
     
     def get_seconds_capture(self):
-        """
+        """!
         Gets the byte value for seconds capture
 
-        :return: The seconds capture
-        :rtype: int
+        @return **int** The seconds capture
         """
         return self.bcd_to_dec(self._i2c.readByte(self.address, self.kRegSecondsCapture))
     
     def set_calibration_offset(self, ppm):
-        """
+        """!
         Sets the calibration offset in parts per million (ppm)
 
-        Under the hood, the offset is a two's complement value with a range of -32 to + 31. See App-Manual page 22 for more information. 
+        Under the hood, the offset is a two's complement value with a range of -32 to + 31. See App-Manual page 22 for more information.
 
-        :param ppm: The calibration offset in parts per million
-        :type ppm: float
+        @param float ppm: The calibration offset in parts per million
         """
 
         integerOffset = int(ppm / 0.238)
@@ -929,11 +871,10 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegOffset, integerOffset)
 
     def get_calibration_offset(self):
-        """
+        """!
         Gets the calibration offset in parts per million
 
-        :return: The calibration offset in parts per million
-        :rtype: int
+        @return **int** The calibration offset in parts per million
         """
         value = self._i2c.readByte(self.address, self.kRegOffset)
         if value > 32:
@@ -941,101 +882,90 @@ class QwiicRV8803(object):
         return value * 0.238
 
     def set_evi_debounce_time(self, debounce_time):
-        """
+        """!
         Sets the EVI debounce time
 
-        :param debounce_time: The debounce time
-        :type debounce_time: int
+        @param int debounce_time: The debounce time
         """
         self.write_two_bits(self.kRegEventControl, self.kEventEt, debounce_time)
 
     def set_evi_calibration(self, evi_calibration):
-        """
+        """!
         Sets the EVI calibration
 
-        :param evi_calibration: The EVI calibration
-        :type evi_calibration: bool
+        @param bool evi_calibration: The EVI calibration
         """
         self.write_bit(self.kRegEventControl, self.kEventErst, evi_calibration)
 
     def set_evi_edge_detection(self, edge):
-        """
+        """!
         Sets the EVI edge detection
 
-        :param edge: The edge detection
-        :type edge: bool
+        @param bool edge: The edge detection
         """
         self.write_bit(self.kRegEventControl, self.kEventEhl, edge)
 
     def set_evi_event_capture(self, capture):
-        """
+        """!
         Sets the EVI event capture
 
-        :param capture: The event capture
-        :type capture: bool
+        @param bool capture: The event capture
         """
         self.write_bit(self.kRegEventControl, self.kEventEcp, capture)
 
     def get_evi_debounce_time(self):
-        """
+        """!
         Gets the EVI debounce time
 
-        :return: The debounce time
-        :rtype: int
+        @return **int** The debounce time
         """
         return self.read_two_bits(self.kRegEventControl, self.kEventEt)
 
     def get_evi_calibration(self):
-        """
+        """!
         Gets the EVI calibration
 
-        :return: The EVI calibration
-        :rtype: bool
+        @return **bool** The EVI calibration
         """
         return self.read_bit(self.kRegEventControl, self.kEventErst)
 
     def get_evi_edge_detection(self):
-        """
+        """!
         Gets the EVI edge detection
 
-        :return: The edge detection
-        :rtype: bool
+        @return **bool** The edge detection
         """
         return self.read_bit(self.kRegEventControl, self.kEventEhl)
 
     def get_evi_event_capture(self):
-        """
+        """!
         Gets the EVI event capture
 
-        :return: The event capture
-        :rtype: bool
+        @return **bool** The event capture
         """
         return self.read_bit(self.kRegEventControl, self.kEventEcp)
 
     def set_countdown_timer_enable(self, timer_state):
-        """
+        """!
         Sets the countdown timer enable
 
-        :param timer_state: The timer state
-        :type timer_state: bool
+        @param bool timer_state: The timer state
         """
         self.write_bit(self.kRegExtension, self.kExtensionTe, timer_state)
 
     def set_countdown_timer_frequency(self, countdown_timer_frequency):
-        """
+        """!
         Sets the countdown timer frequency
 
-        :param countdown_timer_frequency: The countdown timer frequency
-        :type countdown_timer_frequency: int
+        @param int countdown_timer_frequency: The countdown timer frequency
         """
         self.write_two_bits(self.kRegExtension, self.kExtensionTd, countdown_timer_frequency)
     
     def set_countdown_timer_clock_ticks(self, clock_ticks):
-        """
+        """!
         Sets the countdown timer clock ticks
 
-        :param clock_ticks: The clock ticks
-        :type clock_ticks: int
+        @param int clock_ticks: The clock ticks
         """
         # First handle the upper bit, as we need to preserve the GPX bits
         value = self._i2c.readByte(self.address, self.kRegTimer1)
@@ -1046,86 +976,75 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegTimer0, value)
     
     def get_countdown_timer_clock_ticks(self):
-        """
+        """!
         Gets the countdown timer clock ticks
 
-        :return: The countdown timer clock ticks
-        :rtype: int
+        @return **int** The countdown timer clock ticks
         """
         value = self._i2c.readByte(self.address, self.kRegTimer1) << 8
         value |= self._i2c.readByte(self.address, self.kRegTimer0)
         return value
     
     def set_clock_out_timer_frequency(self, clock_out_timer_frequency):
-        """
+        """!
         Sets the clock out timer frequency
 
-        :param clock_out_timer_frequency: The clock out timer frequency
-        :type clock_out_timer_frequency: int
+        @param int clock_out_timer_frequency: The clock out timer frequency
         """
         self.write_bit(self.kRegExtension, self.kExtensionFd, clock_out_timer_frequency)
 
     def get_countdown_timer_enable(self):
-        """
+        """!
         Gets the countdown timer enable
 
-        :return: The countdown timer enable
-        :rtype: bool
+        @return **bool** The countdown timer enable
         """
         return self.read_bit(self.kRegExtension, self.kExtensionTe)
 
     def get_countdown_timer_frequency(self):
-        """
+        """!
         Gets the countdown timer frequency
 
-        :return: The countdown timer frequency
-        :rtype: int
+        @return **int** The countdown timer frequency
         """
         return self.read_two_bits(self.kRegExtension, self.kExtensionTd)
 
     def get_clock_out_timer_frequency(self):
-        """
+        """!
         Gets the clock out timer frequency
 
-        :return: The clock out timer frequency
-        :rtype: int
+        @return **int** The clock out timer frequency
         """
         return self.read_two_bits(self.kRegExtension, self.kExtensionFd)
 
     def set_periodic_time_update_frequency(self, time_update_frequency):
-        """
+        """!
         Sets the periodic time update frequency
 
-        :param time_update_frequency: The time update frequency
-        :type time_update_frequency: bool
+        @param bool time_update_frequency: The time update frequency
         """
         self.write_bit(self.kRegExtension, self.kExtensionUsel, time_update_frequency)
 
     def get_periodic_time_update_frequency(self):
-        """
+        """!
         Gets the periodic time update frequency
 
-        :return: The periodic time update frequency
-        :rtype: bool
+        @return **bool** The periodic time update frequency
         """
         return self.read_bit(self.kRegExtension, self.kExtensionUsel)
 
     def set_items_to_match_for_alarm(self, minuteAlarm, hourAlarm, weekdayAlarm, dateAlarm):
-        """
+        """!
         Set Alarm Mode controls which parts of the time have to match for the alarm to trigger.
         When the RTC matches a given time, make an interrupt fire.
         Setting a bit to 1 means that the RTC does not check if that value matches to trigger the alarm.
 
         Alarm goes off with match of second, minute, hour, etc
 
-        :param minuteAlarm: If `True`, the alarm will trigger on a match of the minutes
-        :type minuteAlarm: bool
-        :param hourAlarm: If `True`, the alarm will trigger on a match of the hours
-        :type hourAlarm: bool
-        :param weekdayAlarm: If `True`, the alarm will trigger on a match of the weekday
-        :type weekdayAlarm: bool
-        :param dateAlarm: If `True`, the alarm will trigger on a match of the date
-        :type dateAlarm: bool
+        @param bool minuteAlarm: If `True`, the alarm will trigger on a match of the minutes
+        @param bool hourAlarm: If `True`, the alarm will trigger on a match of the hours
+        @param bool weekdayAlarm: If `True`, the alarm will trigger on a match of the weekday
+        @param bool dateAlarm: If `True`, the alarm will trigger on a match of the date
         """
         self.write_bit(self.kRegMinutesAlarm, self.kAlarmEnable, not minuteAlarm)  # For some reason these bits are active low
         self.write_bit(self.kRegHoursAlarm, self.kAlarmEnable, not hourAlarm)
@@ -1135,11 +1054,10 @@ class QwiicRV8803(object):
             self.write_bit(self.kRegWeekdaysDateAlarm, self.kAlarmEnable, not dateAlarm)
 
     def set_alarm_minutes(self, minute):
-        """
+        """!
         Sets the alarm minutes
 
-        :param minute: The minute value
-        :type minute: int
+        @param int minute: The minute value
         """
         value = self._i2c.readByte(self.address, self.kRegMinutesAlarm)
         value &= (1 << self.kAlarmEnable)  # clear everything but enable bit
@@ -1147,11 +1065,10 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegMinutesAlarm, value)
 
     def set_alarm_hours(self, hour):
-        """
+        """!
         Sets the alarm hours
 
-        :param hour: The hour value
-        :type hour: int
+        @param int hour: The hour value
         """
         value = self._i2c.readByte(self.address, self.kRegHoursAlarm)
         value &= (1 << self.kAlarmEnable)  # clear everything but enable bit
@@ -1159,11 +1076,10 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegHoursAlarm, value)
 
     def set_alarm_weekday(self, weekday):
-        """
+        """!
         Sets the alarm weekday
 
-        :param weekday: The weekday value
-        :type weekday: int
+        @param int weekday: The weekday value
         """
         value = self._i2c.readByte(self.address, self.kRegWeekdaysDateAlarm)
         value &= (1 << self.kAlarmEnable)  # clear everything but enable bit
@@ -1171,11 +1087,10 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegWeekdaysDateAlarm, value)
 
     def set_alarm_date(self, date):
-        """
+        """!
         Sets the alarm date
 
-        :param date: The date value
-        :type date: int
+        @param int date: The date value
         """
         value = self._i2c.readByte(self.address, self.kRegWeekdaysDateAlarm)
         value &= (1 << self.kAlarmEnable)  # clear everything but enable bit
@@ -1183,7 +1098,7 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegWeekdaysDateAlarm, value)
     
     def enable_hardware_interrupt(self, source):
-        """
+        """!
         Enables the hardware interrupt for the given source
 
         Given a bit location, enable the interrupt
@@ -1194,8 +1109,7 @@ class QwiicRV8803(object):
             kEviInterrupt
             kControlReset
 
-        :param source: The interrupt source
-        :type source: int
+        @param int source: The interrupt source
         """
         if source not in [self.kUpdateInterrupt, self.kTimerInterrupt, self.kAlarmInterrupt, self.kEviInterrupt, self.kControlReset]:
             return
@@ -1205,7 +1119,7 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegControl, value)
 
     def disable_hardware_interrupt(self, source):
-        """
+        """!
         Disables the hardware interrupt for the given source
         Allowable sources: 
             kUpdateInterrupt
@@ -1214,8 +1128,7 @@ class QwiicRV8803(object):
             kEviInterrupt
             kControlReset
 
-        :param source: The interrupt source
-        :type source: int
+        @param int source: The interrupt source
         """
         if source not in [self.kUpdateInterrupt, self.kTimerInterrupt, self.kAlarmInterrupt, self.kEviInterrupt, self.kControlReset]:
             return
@@ -1224,7 +1137,7 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegControl, value)
 
     def disable_all_interrupts(self):
-        """
+        """!
         Disables all hardware interrupts
         """
         value = self._i2c.readByte(self.address, self.kRegControl)
@@ -1232,14 +1145,12 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, self.kRegControl, value)
 
     def get_interrupt_flag(self, flag_to_get):
-        """
+        """!
         Gets the interrupt flag for the given source
 
-        :param flag_to_get: The interrupt flag to get
-        :type flag_to_get: int
+        @param int flag_to_get: The interrupt flag to get
 
-        :return: The value of the interrupt flag
-        :rtype: bool
+        @return **bool** The value of the interrupt flag
         """
         flag = self._i2c.readByte(self.address, self.kRegFlag)
         flag &= (1 << flag_to_get)
@@ -1247,68 +1158,62 @@ class QwiicRV8803(object):
         return flag != 0
 
     def clear_all_interrupt_flags(self):
-        """
+        """!
         Clears all interrupt flags
         """
         self._i2c.writeByte(self.address, self.kRegFlag, 0b00000000)  # Write all 0's to clear all flags
 
     def clear_interrupt_flag(self, flag_to_clear):
-        """
+        """!
         Clears the interrupt flag for the given source
 
-        :param flag_to_clear: The interrupt flag to clear
-        :type flag_to_clear: int
+        @param int flag_to_clear: The interrupt flag to clear
         """
         value = self._i2c.readByte(self.address, self.kRegFlag)
         value &= ~(1 << flag_to_clear)  # Clear flag
         self._i2c.writeByte(self.address, self.kRegFlag, value)
 
     def get_alarm_minutes(self):
-        """
+        """!
         Gets the alarm minutes
 
-        :return: The alarm minutes
-        :rtype: int
+        @return **int** The alarm minutes
         """
         return self.bcd_to_dec(self._i2c.readByte(self.address, self.kRegMinutesAlarm))
 
     def get_alarm_hours(self):
-        """
+        """!
         Gets the alarm hours
 
-        :return: The alarm hours
-        :rtype: int
+        @return **int** The alarm hours
         """
         return self.bcd_to_dec(self._i2c.readByte(self.address, self.kRegHoursAlarm))
 
     def get_alarm_weekday(self):
-        """
+        """!
         Gets the alarm weekday
 
-        :return: The alarm weekday
-        :rtype: int
+        @return **int** The alarm weekday
         """
         return self.bcd_to_dec(self._i2c.readByte(self.address, self.kRegWeekdaysDateAlarm))
 
     def get_alarm_date(self):
-        """
+        """!
         Gets the alarm date
 
-        :return: The alarm date
-        :rtype: int
+        @return **int** The alarm date
         """
         return self.bcd_to_dec(self._i2c.readByte(self.address, self.kRegWeekdaysDateAlarm))
 
 
     # Helper Functions
     def dec_to_bcd(self, val):
-        """
+        """!
         Converts decimal to binary coded decimal
-        
-        :param val: The decimal value to convert
 
-        :return: The binary coded decimal
-        :rtype: int
+        @param val: The decimal value to convert
+
+        @return **int** The binary coded decimal
         """
         if (val < 0) or (val > 255):
             return 0
@@ -1316,26 +1221,22 @@ class QwiicRV8803(object):
         return ( (val // 10) * 16) + (val % 10)
     
     def bcd_to_dec(self, val):
-        """
+        """!
         Converts binary coded decimal to decimal
 
-        :param val: The binary coded decimal value to convert
+        @param val: The binary coded decimal value to convert
 
-        :return: The decimal value
-        :rtype: int
+        @return **int** The decimal value
         """
         return ( (val // 16) * 10) + (val % 16)
     
     def write_bit(self, reg, bit, val):
-        """
+        """!
         Writes a bit to a register
 
-        :param reg: The register to write to
-        :type reg: int
-        :param bit: The bit to write
-        :type bit: int
-        :param val: The value to write
-        :type val: bool
+        @param int reg: The register to write to
+        @param int bit: The bit to write
+        @param bool val: The value to write
         """
         data = self._i2c.readByte(self.address, reg)
 
@@ -1347,15 +1248,12 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, reg, data)
     
     def write_two_bits(self, reg, bit, val):
-        """
+        """!
         Writes two bits to a register
 
-        :param reg: The register to write to
-        :type reg: int
-        :param bit: The bit to write
-        :type bit: int
-        :param val: The value to write
-        :type val: int
+        @param int reg: The register to write to
+        @param int bit: The bit to write
+        @param int val: The value to write
         """
         data = self._i2c.readByte(self.address, reg)
 
@@ -1365,31 +1263,25 @@ class QwiicRV8803(object):
         self._i2c.writeByte(self.address, reg, data)
     
     def read_bit(self, reg, bit):
-        """
+        """!
         Reads a bit from a register
 
-        :param reg: The register to read from
-        :type reg: int
-        :param bit: The bit to read
-        :type bit: int
+        @param int reg: The register to read from
+        @param int bit: The bit to read
 
-        :return: The value of the bit
-        :rtype: bool
+        @return **bool** The value of the bit
         """
         data = self._i2c.readByte(self.address, reg)
         return (data & (1 << bit)) != 0
 
     def read_two_bits(self, reg, bit):
-        """
+        """!
         Reads two bits from a register
 
-        :param reg: The register to read from
-        :type reg: int
-        :param bit: The bit to read
-        :type bit: int
+        @param int reg: The register to read from
+        @param int bit: The bit to read
 
-        :return: The value of the bits
-        :rtype: int
+        @return **int** The value of the bits
         """
         data = self._i2c.readByte(self.address, reg)
         return (data & (3 << bit)) >> bit
