@@ -41,7 +41,7 @@ import time
 # The CircuitPython time module has time.monotonic_ns()
 # The MicroPython time module has time.time_ns()
 # RasPi time module has both
-# TODO: check that this is necessary and if this is a clean-ish way to do this
+
 def check_has_monotonic_ns():
 	try:
 		time.monotonic_ns()

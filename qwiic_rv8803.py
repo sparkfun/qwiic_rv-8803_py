@@ -830,7 +830,7 @@ class QwiicRV8803(object):
         if self._hasIsDst:
             tm.append(-1) 
 
-        t = time.mktime(tm)
+        t = time.mktime(tuple(tm))
 
         if not use1970sEpoch:
             t -= 946684800
