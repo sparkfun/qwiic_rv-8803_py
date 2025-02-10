@@ -1,9 +1,15 @@
 {
     "urls": [
-      ["qwiic_rv8803.py", "github:sparkfun/Qwiic_RV-8803_Py/qwiic_rv8803.py"]
-    ],
-    "deps": [
-      ["github:sparkfun/Qwiic_I2C_Py", "master"]
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex1_set_time.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex1_set_time.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex2_print_time.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex2_print_time.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex3_set_hundredths.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex3_set_hundredths.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex4a_alarm_interrupt.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex4a_alarm_interrupt.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex4b_countdown_interrupt.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex4b_countdown_interrupt.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex4c_periodic_interrupt.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex4c_periodic_interrupt.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex5_timestamp.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex5_timestamp.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex6_fine_tuning.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex6_fine_tuning.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex7_print_epoch.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex7_print_epoch.py"],
+      ["qwiic_rv-8803_py_examples/qwiic_rv8803_ex8_set_epoch.py", "github:sparkfun/qwiic_rv-8803_py/examples/qwiic_rv8803_ex8_set_epoch.py"]
     ],
     "version": "1.0.0"
 }
